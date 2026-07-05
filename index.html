@@ -14,7 +14,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const API_BASE_URL = "http://localhost:5000";
+    const API_BASE_URL = window.location.origin;
 
     function App() {
       const [prompt, setPrompt] = React.useState("");
