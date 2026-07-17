@@ -14,40 +14,40 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const API_BASE_URL = window.location.origin;[cite: 1]
+    const API_BASE_URL = window.location.origin;
 
     function App() {
-      const [prompt, setPrompt] = React.useState("");[cite: 1]
-      const [currentChat, setCurrentChat] = React.useState(null);[cite: 1]
-      const [history, setHistory] = React.useState([]);[cite: 1]
-      const [user, setUser] = React.useState(null); [cite: 1]
-      const [isLoading, setIsLoading] = React.useState(false);[cite: 1]
-      const [connectionStatus, setConnectionStatus] = React.useState("checking");[cite: 1]
-      const [errorMessage, setErrorMessage] = React.useState(null);[cite: 1]
+      const [prompt, setPrompt] = React.useState("");
+      const [currentChat, setCurrentChat] = React.useState(null);
+      const [history, setHistory] = React.useState([]);
+      const [user, setUser] = React.useState(null); 
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [connectionStatus, setConnectionStatus] = React.useState("checking");
+      const [errorMessage, setErrorMessage] = React.useState(null);
 
-      const [loginName, setLoginName] = React.useState("");[cite: 1]
-      const [loginEmail, setLoginEmail] = React.useState("");[cite: 1]
-      const [consentChecked, setConsentChecked] = React.useState(false);[cite: 1]
+      const [loginName, setLoginName] = React.useState("");
+      const [loginEmail, setLoginEmail] = React.useState("");
+      const [consentChecked, setConsentChecked] = React.useState(false);
 
       React.useEffect(() => {
         async function loadInitialData() {
           try {
             const healthRes = await fetch(`${API_BASE_URL}/api/health`);
             if (!healthRes.ok) throw new Error();
-            setConnectionStatus("connected");[cite: 1]
+            setConnectionStatus("connected");
 
             const userRes = await fetch(`${API_BASE_URL}/api/users`);
             if (userRes.ok) {
               const userData = await userRes.json();
               if (userData.name && userData.email) {
-                setUser(userData);[cite: 1]
+                setUser(userData);
                 const historyRes = await fetch(`${API_BASE_URL}/api/history`);
                 const historyData = await historyRes.json();
-                setHistory(historyData.conversations || []);[cite: 1]
+                setHistory(historyData.conversations || []);
               }
             }
           } catch (err) {
-            setConnectionStatus("offline");[cite: 1]
+            setConnectionStatus("offline");
             setErrorMessage("Backend server connection failed.");
           }
         }
@@ -55,8 +55,8 @@
       }, []);
 
       const handleLoginSubmit = async (e) => {
-        e.preventDefault();[cite: 1]
-        if (!loginName.trim() || !loginEmail.trim() || !consentChecked) return;[cite: 1]
+        e.preventDefault();
+        if (!loginName.trim() || !loginEmail.trim() || !consentChecked) return;
 
         try {
           const res = await fetch(`${API_BASE_URL}/api/login`, {
@@ -68,9 +68,9 @@
           if (!res.ok) throw new Error();
           const data = await res.json();
           
-          setUser({ name: data.name, email: data.email });[cite: 1]
-          setHistory([]); [cite: 1]
-          setErrorMessage(null);[cite: 1]
+          setUser({ name: data.name, email: data.email });
+          setHistory([]); 
+          setErrorMessage(null);
         } catch (err) {
           setErrorMessage("Failed to establish configuration profile session.");
         }
@@ -78,15 +78,15 @@
 
       const handleLogout = async () => {
         try {
-          const res = await fetch(`${API_BASE_URL}/api/logout`, { method: "POST" });[cite: 1]
+          const res = await fetch(`${API_BASE_URL}/api/logout`, { method: "POST" });
           if (res.ok) {
-            setUser(null);[cite: 1]
-            setHistory([]);[cite: 1]
-            setCurrentChat(null);[cite: 1]
-            setLoginName("");[cite: 1]
-            setLoginEmail("");[cite: 1]
-            setConsentChecked(false);[cite: 1]
-            setErrorMessage(null);[cite: 1]
+            setUser(null);
+            setHistory([]);
+            setCurrentChat(null);
+            setLoginName("");
+            setLoginEmail("");
+            setConsentChecked(false);
+            setErrorMessage(null);
           }
         } catch (err) {
           setErrorMessage("Failed to safely terminate profile session.");
@@ -94,11 +94,11 @@
       };
 
       const handleSubmit = async (e) => {
-        e.preventDefault();[cite: 1]
-        if (!prompt.trim() || isLoading) return;[cite: 1]
+        e.preventDefault();
+        if (!prompt.trim() || isLoading) return;
 
-        setIsLoading(true);[cite: 1]
-        setErrorMessage(null);[cite: 1]
+        setIsLoading(true);
+        setErrorMessage(null);
 
         try {
           const res = await fetch(`${API_BASE_URL}/api/chat`, {
@@ -107,21 +107,21 @@
             body: JSON.stringify({ prompt: prompt })
           });
 
-          if (!res.ok) throw new Error("Server error processing request");[cite: 1]
+          if (!res.ok) throw new Error("Server error processing request");
           const data = await res.json();
           
           setCurrentChat(data);
-          setPrompt("");[cite: 1]
+          setPrompt("");
 
           const historyRes = await fetch(`${API_BASE_URL}/api/history`);
           if (historyRes.ok) {
             const historyData = await historyRes.json();
-            setHistory(historyData.conversations || []);[cite: 1]
+            setHistory(historyData.conversations || []);
           }
         } catch (err) {
-          setErrorMessage(err.message || "Failed to communicate with AI Engine.");[cite: 1]
+          setErrorMessage(err.message || "Failed to communicate with AI Engine.");
         } finally {
-          setIsLoading(false);[cite: 1]
+          setIsLoading(false);
         }
       };
 
@@ -129,33 +129,33 @@
         return (
           <div className="login-screen-wrapper">
             <div className="login-modal-card">
-              <div className="brand-mark">HD</div>[cite: 1]
-              <h2>Evaluation Session</h2>[cite: 1]
-              <p>Configure access criteria details to establish data tracking parameters.</p>[cite: 1]
+              <div className="brand-mark">HD</div>
+              <h2>Evaluation Session</h2>
+              <p>Configure access criteria details to establish data tracking parameters.</p>
               
-              {errorMessage && <div className="error-box">{errorMessage}</div>}[cite: 1]
+              {errorMessage && <div className="error-box">{errorMessage}</div>}
               
               <form onSubmit={handleLoginSubmit} className="login-control-form">
                 <div className="form-input-group">
-                  <label>User Identifiers</label>[cite: 1]
+                  <label>User Identifiers</label>
                   <input 
                     type="text" 
                     placeholder="Enter name" 
                     value={loginName}
                     onChange={(e) => setLoginName(e.target.value)}
                     required
-                  />[cite: 1]
+                  />
                 </div>
 
                 <div className="form-input-group">
-                  <label>Email Address</label>[cite: 1]
+                  <label>Email Address</label>
                   <input 
                     type="email" 
                     placeholder="Enter email" 
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
-                  />[cite: 1]
+                  />
                 </div>
 
                 <div className="form-consent-row">
@@ -165,10 +165,10 @@
                     checked={consentChecked}
                     onChange={(e) => setConsentChecked(e.target.checked)}
                     required
-                  />[cite: 1]
+                  />
                   <label htmlFor="consentCheck">
                     Confirm explicit authorization to record profile tokens and process metadata structures safely.
-                  </label>[cite: 1]
+                  </label>
                 </div>
 
                 <button 
@@ -177,7 +177,7 @@
                   disabled={!loginName.trim() || !loginEmail.trim() || !consentChecked || connectionStatus === "offline"}
                 >
                   Authorize Profile Session
-                </button>[cite: 1]
+                </button>
               </form>
             </div>
           </div>
@@ -188,26 +188,26 @@
         <div className="page-shell">
           <aside className="sidebar">
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div className="brand-mark">HD</div>[cite: 1]
+              <div className="brand-mark">HD</div>
               <div style={{ flexGrow: 1, minWidth: 0 }}>
-                <p className="eyebrow">Welcome,</p>[cite: 1]
-                <h2 style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</h2>[cite: 1]
+                <p className="eyebrow">Welcome,</p>
+                <h2 style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</h2>
               </div>
             </div>
             
-            <div style={{ borderBottom: "1px solid #d5dee9", paddingBottom: "4px" }} />[cite: 1]
-            <h2>History Log</h2>[cite: 1]
+            <div style={{ borderBottom: "1px solid #d5dee9", paddingBottom: "4px" }} />
+            <h2>History Log</h2>
             
             <div className="history-list">
               {history.length === 0 ? (
-                <p className="empty-history">No past entries</p>[cite: 1]
+                <p className="empty-history">No past entries</p>
               ) : (
                 history.map((item, index) => (
                   <div key={index} className="history-item">
-                    <span><strong>Q:</strong> {item.prompt}</span>[cite: 1]
+                    <span><strong>Q:</strong> {item.prompt}</span>
                     <div className={`history-verdict ${item.score >= 0.45 ? 'history-verdict--hallucinated' : 'history-verdict--grounded'}`}>
                       Risk Index: {Math.round(item.score * 100)}%
-                    </div>[cite: 1]
+                    </div>
                   </div>
                 ))
               )}
@@ -216,27 +216,26 @@
             <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "14px" }}>
               <button onClick={handleLogout} className="logout-action-btn">
                 Logout Session
-              </button>[cite: 1]
+              </button>
             </div>
           </aside>
 
           <main className="main-panel">
             <header className="hero-header">
-              <h1>AI Hallucination Engine</h1>[cite: 1]
-              <p className="header-copy">Evaluate natural language responses through token confidence, NLI consistency checks, and verification against facts.</p>[cite: 1]
+              <h1>AI Hallucination Engine</h1>
+              <p className="header-copy">Evaluate natural language responses through token confidence, NLI consistency checks, and verification against facts.</p>
             </header>
 
             <div className="response-area">
-              {errorMessage && <div className="error-box">{errorMessage}</div>}[cite: 1]
+              {errorMessage && <div className="error-box">{errorMessage}</div>}
 
               {currentChat ? (
                 <div className="response-card">
                   <div className={`verdict-strip verdict-strip--${currentChat.verdict}`}>
-                    <span>Verdict: {currentChat.verdict}</span>[cite: 1]
+                    <span>Verdict: {currentChat.verdict}</span>
                     <div>Metrics Index Score: {Math.round(currentChat.hallucination_score * 100)}%</div>
                   </div>
 
-                  {/* HIGH TECH COMPONENT METERS (THE UI UPGRADE) */}
                   <div style={{ padding: "20px", background: "#f8fafc", borderBottom: "1px solid #edf2f7", display: "flex", flexDirection: "column", gap: "12px" }}>
                     <h4 style={{ margin: 0, fontSize: "12px", textTransform: "uppercase", color: "#64748b", tracking: "0.5px" }}>Diagnostic Score Breakdown</h4>
                     
@@ -272,26 +271,26 @@
                   </div>
 
                   <div className="message-section">
-                    <span>Prompt Query</span>[cite: 1]
-                    <p>{currentChat.prompt}</p>[cite: 1]
+                    <span>Prompt Query</span>
+                    <p>{currentChat.prompt}</p>
                   </div>
                   <div className="message-section">
-                    <span>Generated AI Content</span>[cite: 1]
-                    <p>{currentChat.response}</p>[cite: 1]
+                    <span>Generated AI Content</span>
+                    <p>{currentChat.response}</p>
                   </div>
                 </div>
               ) : (
                 !isLoading && (
                   <div style={{ textAlign: "center", color: "#94a3b8", fontSize: "15px", marginTop: "40px" }}>
                     Enter a data query below to initiate structural evaluation diagnostics.
-                  </div>[cite: 1]
+                  </div>
                 )
               )}
 
               {isLoading && (
                 <div className="loading-indicator">
-                  <div className="spinner"></div>[cite: 1]
-                  <span>Calculating score synthesis (NLI & RAG vectors)...</span>[cite: 1]
+                  <div className="spinner"></div>
+                  <span>Calculating score synthesis (NLI & RAG vectors)...</span>
                 </div>
               )}
             </div>
@@ -303,18 +302,18 @@
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Ask something to check for structural hallucinations (e.g., 'Who invented the telephone?')"
                 disabled={isLoading}
-              />[cite: 1]
+              />
               <button type="submit" disabled={isLoading || !prompt.trim()}>
-                {isLoading ? "Running..." : "Evaluate"}[cite: 1]
-              </button>[cite: 1]
+                {isLoading ? "Running..." : "Evaluate"}
+              </button>
             </form>
           </main>
         </div>
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));[cite: 1]
-    root.render(<App />);[cite: 1]
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>
