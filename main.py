@@ -54,8 +54,7 @@ class RAGVerificationResult(BaseModel):
     supported: bool
     confidence: float
 
-# Hallucination settings[cite: 2]
-HALLUCINATION_THRESHOLD = 0.45[cite: 2]
+HALLUCINATION_THRESHOLD = 0.45
 SCORE_WEIGHTS = {
     "nli": 0.45,
     "rag": 0.35,
