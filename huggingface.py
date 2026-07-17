@@ -1,15 +1,10 @@
 import os
 import httpx
 
-# We will use the Hugging Face Serverless API to query the model for free.
 API_URL = "https://api-inference.huggingface.co/models/gpt2"
 HF_TOKEN = os.getenv("HF_API_TOKEN", "")
 
 def run_local_llm(prompt: str) -> str:
-    """
-    Queries the Hugging Face Serverless API for text generation.
-    This takes 0MB of local RAM, preventing the 'Out of memory' error.
-    """
     if not HF_TOKEN:
         return "Fallback: Please configure a valid HF_API_TOKEN in your environment variables."
 
@@ -29,14 +24,15 @@ def run_local_llm(prompt: str) -> str:
             
             if response.status_code == 200:
                 data = response.json()
-                # Serverless API returns a list containing a dict with 'generated_text'
                 if isinstance(data, list) and len(data) > 0:
                     return data[0].get("generated_text", "").strip()
                 return "Error: Unexpected response structure from Hugging Face."
             else:
+                # This line lets us see exactly what HF says is wrong in Render logs
                 print(f"HF API Error: {response.status_code} - {response.text}")
-                return f"Hugging Face API returned error status: {response.status_code}"
+                return f"Hugging Face API error status: {response.status_code}. Detail: {response.text}"
                 
     except Exception as e:
+        # This line prints connection timeouts, SSL issues, etc.
         print(f"HF Request Exception: {e}")
-        return "Failed to communicate with Hugging Face Serverless API."
+        return f"Failed to communicate with Hugging Face Serverless API. Exception: {str(e)}"
