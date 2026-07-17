@@ -1,52 +1,42 @@
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
+import httpx
 
-# Use the absolute smallest functional model that can run on a free Render instance.
-MODEL_NAME = "distilgpt2"
-
-print(f"Loading local model: {MODEL_NAME}...")
-
-# Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-
-# Load model, ensuring it runs only on CPU (as free Render has no GPU)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.float32).to('cpu')
+# We will use the Hugging Face Serverless API to query the model for free.
+API_URL = "https://api-inference.huggingface.co/models/gpt2"
+HF_TOKEN = os.getenv("HF_API_TOKEN", "")
 
 def run_local_llm(prompt: str) -> str:
     """
-    Runs the distilgpt2 model locally on the free Render instance (CPU only).
+    Queries the Hugging Face Serverless API for text generation.
+    This takes 0MB of local RAM, preventing the 'Out of memory' error.
     """
-    try:
-        inputs = tokenizer(prompt, return_tensors="pt").to('cpu')
-        
-        # Adjust generation parameters for better performance on a limited CPU
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=40,  # Keep responses short to save CPU/RAM
-                do_sample=True,
-                temperature=0.7,
-                top_k=50,
-                num_return_sequences=1
-            )
-        
-        full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        
-        # Remove the prompt from the response, as causal models include it
-        if full_response.startswith(prompt):
-            final_response = full_response[len(prompt):].strip()
-        else:
-            final_response = full_response.strip()
-            
-        return final_response
-        
-    except Exception as e:
-        print(f"Error running local LLM: {e}")
-        return "Local LLM inference failed due to a system resource issue."
+    if not HF_TOKEN:
+        return "Fallback: Please configure a valid HF_API_TOKEN in your environment variables."
 
-if __name__ == "__main__":
-    # Test generation locally before deploying
-    test_prompt = "What is the capital of India?"
-    print(f"\nPrompt: {test_prompt}")
-    response = run_local_llm(test_prompt)
-    print(f"Response: {response}")
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 40,
+            "temperature": 0.7,
+            "return_full_text": False
+        }
+    }
+
+    try:
+        with httpx.Client(timeout=20.0) as client:
+            response = client.post(API_URL, headers=headers, json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Serverless API returns a list containing a dict with 'generated_text'
+                if isinstance(data, list) and len(data) > 0:
+                    return data[0].get("generated_text", "").strip()
+                return "Error: Unexpected response structure from Hugging Face."
+            else:
+                print(f"HF API Error: {response.status_code} - {response.text}")
+                return f"Hugging Face API returned error status: {response.status_code}"
+                
+    except Exception as e:
+        print(f"HF Request Exception: {e}")
+        return "Failed to communicate with Hugging Face Serverless API."
